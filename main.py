@@ -6,7 +6,7 @@ def main() -> None:
     with open("players.json", "r", encoding="utf-8") as file:
         data = json.load(file)
 
-    for player_data in data:
+    for nickname, player_data in data.items():
         race_info = player_data["race"]
         race, _ = Race.objects.get_or_create(
             name=race_info["name"],
@@ -29,7 +29,7 @@ def main() -> None:
             )
 
         Player.objects.get_or_create(
-            nickname=player_data["nickname"],
+            nickname=nickname,
             defaults={
                 "email": player_data["email"],
                 "bio": player_data["bio"],
