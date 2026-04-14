@@ -1,43 +1,42 @@
-import json
-from db.models import Race, Skill, Player, Guild
+from django.db.models import QuerySet
+
+from db.models import Actor, Genre
 
 
-def main() -> None:
-    with open("players.json", "r", encoding="utf-8") as file:
-        data = json.load(file)
+def main() -> QuerySet[Actor]:
+    genres = ["Western", "Action", "Dramma"]
 
-    for nickname, player_data in data.items():
-        race_info = player_data["race"]
-        race, _ = Race.objects.get_or_create(
-            name=race_info["name"],
-            defaults={"description": race_info.get("description")}
-        )
+    for name in genres:
+        Genre.objects.create(name=name)
 
-        for skill_data in race_info.get("skills", []):
-            Skill.objects.get_or_create(
-                name=skill_data["name"],
-                race=race,
-                defaults={"bonus": skill_data.get("bonus", "")}
-            )
+    actors = [
+        ("George", "Klooney"),
+        ("Kianu", "Reaves"),
+        ("Scarlett", "Keegan"),
+        ("Will", "Smith"),
+        ("Jaden", "Smith"),
+        ("Scarlett", "Johansson"),
+    ]
 
-        guild_data = player_data.get("guild")
-        guild = None
-        if guild_data:
-            guild, _ = Guild.objects.get_or_create(
-                name=guild_data["name"],
-                defaults={"description": guild_data.get("description")}
-            )
+    for first_name, last_name in actors:
+        Actor.objects.create(first_name=first_name, last_name=last_name)
 
-        Player.objects.get_or_create(
-            nickname=nickname,
-            defaults={
-                "email": player_data["email"],
-                "bio": player_data["bio"],
-                "race": race,
-                "guild": guild
-            }
-        )
+    Genre.objects.filter(name="Dramma").update(name="Drama")
 
+    Actor.objects.filter(
+        first_name="George",
+        last_name="Klooney",
+    ).update(last_name="Clooney")
 
-if __name__ == "__main__":
-    main()
+    Actor.objects.filter(
+        first_name="Kianu",
+        last_name="Reaves",
+    ).update(
+        first_name="Keanu",
+        last_name="Reeves",
+    )
+
+    Genre.objects.filter(name="Action").delete()
+    Actor.objects.filter(first_name="Scarlett").delete()
+
+    return Actor.objects.filter(last_name="Smith").order_by("first_name")
